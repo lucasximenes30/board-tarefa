@@ -1,17 +1,13 @@
 package lucas.board;
 
 import lucas.board.persistence.migration.MigrationStrategy;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import java.sql.SQLException;
 
 import static lucas.board.persistence.config.ConnectionConfig.getConnection;
 
-@SpringBootApplication
-public class BoardApplication {
+public class Main {
     public static void main(String[] args) throws SQLException {
-        SpringApplication.run(BoardApplication.class, args);
         try(var connection = getConnection()){
             new MigrationStrategy(connection).executeMigration();
         }
