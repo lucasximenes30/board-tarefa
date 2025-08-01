@@ -9,4 +9,5 @@ public class BoardColumEntity {
     private String name;
     private int order;
     private BoardColumKindEnum kind;
+    private BoardEntity board = new BoardEntity();
 }

@@ -1,6 +1,8 @@
 package lucas.board.service;
 import lombok.AllArgsConstructor;
+import lucas.board.persistence.dao.BoardColumnDAO;
 import lucas.board.persistence.dao.BoardDAO;
+import lucas.board.persistence.entity.BoardEntity;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -9,6 +11,28 @@ import java.sql.SQLException;
 public class BoardService {
 
     private final Connection connection;
+
+    public BoardEntity insert(final BoardEntity entity) throws SQLException {
+        var dao = new BoardDAO(connection);
+        var boardColumnDAO = new BoardColumnDAO(connection);
+        try {
+            dao.insert(entity);
+            var columns = entity.getBoardColumns()
+                    .stream()
+                    .map(c -> {
+                c.setBoard(entity);
+                return c;
+            }).toList();
+            for(var column : columns) {
+                boardColumnDAO.insert(column);
+            }
+            connection.commit();
+        } catch (Exception e) {
+            connection.rollback();
+            throw e;
+        }
+        return entity;
+    }
 
     public boolean delete(final Long id) throws SQLException {
         var dao = new BoardDAO(connection);
