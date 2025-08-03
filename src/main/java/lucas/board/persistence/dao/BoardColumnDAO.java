@@ -6,7 +6,10 @@ import lucas.board.persistence.entity.BoardColumEntity;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
+
+import static lucas.board.persistence.entity.BoardColumnKindEnum.findByName;
 
 @RequiredArgsConstructor
 public class BoardColumnDAO {
@@ -34,6 +37,21 @@ public class BoardColumnDAO {
 
 
     public List<BoardColumEntity> findByBoardId(Long id) throws SQLException {
-        return null;
+        List<BoardColumEntity> boardColumEntities = new ArrayList<>();
+        var sql = "SELECT id, name, `order`FROM BOARDS_COLUMNS WHERE board_id = ORDER BY `order`";
+        try (var statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, id);
+            statement.executeQuery();
+            var resultSet = statement.getResultSet();
+            while (resultSet.next()) {
+                var entity = new BoardColumEntity();
+                entity.setId(resultSet.getLong("id"));
+                entity.setName(resultSet.getString("name"));
+                entity.setOrder(resultSet.getInt("order"));
+                entity.setKind(findByName(resultSet.getString("kind")));
+                boardColumEntities.add(entity);
+            }
+        return boardColumEntities;
+        }
     }
 }
