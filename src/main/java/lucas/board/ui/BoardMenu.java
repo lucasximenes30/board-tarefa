@@ -3,14 +3,17 @@ package lucas.board.ui;
 import lombok.AllArgsConstructor;
 import lucas.board.persistence.entity.BoardColumEntity;
 import lucas.board.persistence.entity.BoardEntity;
+import lucas.board.persistence.entity.CardEntity;
 import lucas.board.service.BoardColumnQueryService;
 import lucas.board.service.BoardQueryService;
 import lucas.board.service.CardQueryService;
+import lucas.board.service.CardService;
 
 import java.sql.SQLException;
 import java.util.Scanner;
 
 import static lucas.board.persistence.config.ConnectionConfig.getConnection;
+import static lucas.board.persistence.entity.BoardColumnKindEnum.INITIAL;
 
 @AllArgsConstructor
 public class BoardMenu {
@@ -19,7 +22,7 @@ public class BoardMenu {
     private final Scanner scanner = new Scanner(System.in);
 
     public void execute() throws SQLException{
-        System.out.printf("Bem vindo ao board %s, selecione a operação desejada", boardEntity.getId());
+        System.out.printf("Bem vindo ao board %s, selecione a operação desejada\n", boardEntity.getId());
         var option = -1;
         while(option != 9){
             System.out.println("1 - Criar um card");
@@ -49,7 +52,16 @@ public class BoardMenu {
         }
     }
 
-    private void createCard() {
+    private void createCard() throws SQLException{
+        var card = new CardEntity();
+        System.out.println("Digite o titulo do card: ");
+        card.setTitle(scanner.nextLine());
+        System.out.println("Digite a descrição do card: ");
+        card.setDescription(scanner.nextLine());
+        card.setBoardColumEntity(boardEntity.getInitialColumn());
+        try(var connection = getConnection()){
+            new CardService(connection).insert(card);
+        }
     }
 
     private void moveCardToNextColumn() {

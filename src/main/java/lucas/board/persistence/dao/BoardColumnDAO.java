@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
 import static lucas.board.persistence.entity.BoardColumnKindEnum.findByName;
 
 @RequiredArgsConstructor
@@ -64,12 +65,12 @@ public class BoardColumnDAO {
         SELECT bc.id,
                bc.name,
                bc.kind,
-               COUNT(c.id) AS cards_amount
+               (SELECT COUNT(c.id)
+                FROM CARDS c
+                WHERE c.board_column_id = bc.id) cards_amount
         FROM BOARD_COLUMNS bc
-        LEFT JOIN CARDS c ON c.board_column_id = bc.id
-        WHERE bc.board_id = ?
-        GROUP BY bc.id, bc.name, bc.`order`, bc.kind
-        ORDER BY bc.`order`;
+        WHERE board_id = ?
+        ORDER BY `order`;
     """;
 
         try (var statement = connection.prepareStatement(sql)) {
@@ -95,7 +96,7 @@ public class BoardColumnDAO {
                 SELECT 
                 bc.name, bc.kind, c.id, c.title, c.description 
                 FROM BOARD_COLUMNS bc
-                INNER JOIN CARDS c 
+                LEFT JOIN CARDS c 
                 ON c.board_column_id = bc.id
                 WHERE bc.id = ?;
                 """;
@@ -108,12 +109,17 @@ public class BoardColumnDAO {
                 entity.setName(resultSet.getString("bc.name"));
                 entity.setKind(findByName(resultSet.getString("bc.kind")));
                 do{
+                    if(isNull(resultSet.getString("c.title"))){
+                        break;
+                    }
                     var card = new CardEntity();
                     card.setId(resultSet.getLong("c.id"));
                     card.setTitle(resultSet.getString("c.title"));
                     card.setDescription(resultSet.getString("c.description"));
                     entity.getCards().add(card);
                 }while (resultSet.next());
+                return Optional.of(entity);
+
             }
 
             return Optional.empty();
