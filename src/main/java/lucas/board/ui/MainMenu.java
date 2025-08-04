@@ -79,9 +79,16 @@ public class MainMenu {
         var connection = getConnection();
         var queryService = new BoardQueryService(connection);
         var optional = queryService.findById(id);
-        optional.ifPresentOrElse(board -> new BoardMenu(
-                optional.get())
-                .execute(), () -> System.out.println("Não foi encontrado"));
+        optional.ifPresentOrElse(
+                board -> {
+                    try {
+                        new BoardMenu(board).execute();
+                    } catch (SQLException e) {
+                        System.out.println("Erro ao abrir o menu do board: " + e.getMessage());
+                    }
+                },
+                () -> System.out.println("Não foi encontrado")
+        );
 
     }
 
