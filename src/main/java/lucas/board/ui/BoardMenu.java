@@ -2,12 +2,15 @@ package lucas.board.ui;
 
 import lombok.AllArgsConstructor;
 import lucas.board.persistence.entity.BoardEntity;
+import lucas.board.service.BoardQueryService;
 
 import java.util.Scanner;
 
+import static lucas.board.persistence.config.ConnectionConfig.getConnection;
+
 @AllArgsConstructor
 public class BoardMenu {
-    private final BoardEntity boardEntity;
+    private BoardEntity boardEntity;
 
     private final Scanner scanner = new Scanner(System.in);
 
@@ -58,7 +61,19 @@ public class BoardMenu {
     }
 
     private void showBoard() {
+        try (var connection = getConnection()) {
+            var optional = new BoardQueryService(connection).showBoardDetails(boardEntity.getId());
+            optional.ifPresent(b -> {
+                System.out.printf("Board [%s, %s]\n", b.id(), b.name());
+                b.columns().forEach(c -> {
+                    System.out.printf("Coluna [%s] tipo: [%s] tem %s cards\n", c.name(), c.kind(), c.cardsAmount());
+                });
+            });
+        } catch (Exception e) {
+            System.out.println("Erro ao exibir o board: " + e.getMessage());
+        }
     }
+
 
     private void showColumn() {
     }

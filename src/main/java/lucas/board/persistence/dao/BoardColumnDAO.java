@@ -1,6 +1,7 @@
 package lucas.board.persistence.dao;
 
 import lombok.RequiredArgsConstructor;
+import lucas.board.dto.BoardColumnDTO;
 import lucas.board.persistence.entity.BoardColumEntity;
 
 import java.sql.Connection;
@@ -54,4 +55,37 @@ public class BoardColumnDAO {
         return boardColumEntities;
         }
     }
+
+    public List<BoardColumnDTO> findByBoardIdWithDetails(Long id) throws SQLException {
+        List<BoardColumnDTO> dtos = new ArrayList<>();
+        var sql = """
+        SELECT bc.id,
+               bc.name,
+               bc.kind,
+               COUNT(c.id) AS cards_amount
+        FROM BOARD_COLUMNS bc
+        LEFT JOIN CARDS c ON c.board_column_id = bc.id
+        WHERE bc.board_id = ?
+        GROUP BY bc.id, bc.name, bc.`order`, bc.kind
+        ORDER BY bc.`order`
+    """;
+
+        try (var statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, id);
+            var resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                var dto = new BoardColumnDTO(
+                        resultSet.getLong("bc.id"),
+                        resultSet.getString("bc.name"),
+                        findByName(resultSet.getString("bc.kind")),
+                        resultSet.getInt("cards_amount")
+                );
+                dtos.add(dto);
+            }
+        }
+
+        return dtos;
+    }
+
 }
