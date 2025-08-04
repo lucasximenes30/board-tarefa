@@ -1,6 +1,7 @@
 package lucas.board;
 
 import lucas.board.persistence.migration.MigrationStrategy;
+import lucas.board.ui.MainMenu;
 
 import java.sql.SQLException;
 
@@ -11,5 +12,6 @@ public class Main {
         try(var connection = getConnection()){
             new MigrationStrategy(connection).executeMigration();
         }
+        new MainMenu().execute();
     }
 }

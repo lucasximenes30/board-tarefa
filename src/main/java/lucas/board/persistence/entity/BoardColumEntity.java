@@ -2,6 +2,7 @@ package lucas.board.persistence.entity;
 
 import lombok.Data;
 
+
 @Data
 public class BoardColumEntity {
 

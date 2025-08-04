@@ -46,24 +46,24 @@ public class MainMenu {
 
         List<BoardColumEntity> columns = new ArrayList<>();
         System.out.println("Informe o nome da coluna inicial do board");
-        var initialColumnName = scanner.nextLine();
+        var initialColumnName = scanner.next();
         var initialColumn = createColumn(initialColumnName, INITIAL, 0);
         columns.add(initialColumn);
 
         for (int i = 0; i < addtionalColumns; i++) {
             System.out.println("Informe o nome da coluna de tarefa pendente do board");
-            var pendingColumnName = scanner.nextLine();
+            var pendingColumnName = scanner.next();
             var pendingColumn = createColumn(pendingColumnName, PENDING, i + 1);
             columns.add(pendingColumn);
         }
         System.out.println("Informe o nome da coluna final");
-        var finalColumnName = scanner.nextLine();
+        var finalColumnName = scanner.next();
         var finalColumn = createColumn(finalColumnName, INITIAL, addtionalColumns + 1);
         columns.add(finalColumn);
 
         System.out.println("Informe o nome da coluna de cancelamento do board");
-        var cancelColumnName = scanner.nextLine();
-        var cancelColumn = createColumn(cancelColumnName, CANCEL, addtionalColumns + 1);
+        var cancelColumnName = scanner.next();
+        var cancelColumn = createColumn(cancelColumnName, CANCEL, addtionalColumns + 2);
         columns.add(cancelColumn);
 
         entity.setBoardColumns(columns);
@@ -86,15 +86,15 @@ public class MainMenu {
     }
 
     private void deleteBoard() throws SQLException {
-        System.out.println("Informe o id do borad que será excluido");
+        System.out.println("Informe o id do board que será excluido");
         var id = scanner.nextLong();
         try(var connection = getConnection()){
             var service = new BoardService(connection);
             if (service.delete(id)) {
 
-                System.out.printf("Board %s deletado com sucesso!\n", id);
+                System.out.printf("Board com id %s foi deletado com sucesso!\n", id);
             }else {
-                System.out.printf("O board %s não foi encontrado.\n", id);
+                System.out.printf("O board com id %s não foi encontrado.\n", id);
             }
         }
     }

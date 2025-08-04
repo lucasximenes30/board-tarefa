@@ -2,7 +2,7 @@
 --changeset lucas:202507302123
 --comment boards_columns table create
 
-CREATE TABLE BOARDS_COLUMNS(
+CREATE TABLE BOARD_COLUMNS(
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     `order` int NOT NULL,
