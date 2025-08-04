@@ -3,12 +3,14 @@ package lucas.board.persistence.dao;
 import lombok.RequiredArgsConstructor;
 import lucas.board.dto.BoardColumnDTO;
 import lucas.board.persistence.entity.BoardColumEntity;
+import lucas.board.persistence.entity.CardEntity;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static lucas.board.persistence.entity.BoardColumnKindEnum.findByName;
 
@@ -37,11 +39,11 @@ public class BoardColumnDAO {
     }
 
 
-    public List<BoardColumEntity> findByBoardId(Long id) throws SQLException {
+    public List<BoardColumEntity> findByBoardId(Long boardId) throws SQLException {
         List<BoardColumEntity> boardColumEntities = new ArrayList<>();
-        var sql = "SELECT id, name, `order`, kind FROM BOARD_COLUMNS WHERE board_id = ? ORDER BY `order`";
+        var sql = "SELECT id, name, `order`, kind FROM BOARD_COLUMNS WHERE board_id = ? ORDER BY `order`;";
         try (var statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, id);
+            statement.setLong(1, boardId);
             statement.executeQuery();
             var resultSet = statement.getResultSet();
             while (resultSet.next()) {
@@ -56,7 +58,7 @@ public class BoardColumnDAO {
         }
     }
 
-    public List<BoardColumnDTO> findByBoardIdWithDetails(Long id) throws SQLException {
+    public List<BoardColumnDTO> findByBoardIdWithDetails(Long boardId) throws SQLException {
         List<BoardColumnDTO> dtos = new ArrayList<>();
         var sql = """
         SELECT bc.id,
@@ -67,11 +69,11 @@ public class BoardColumnDAO {
         LEFT JOIN CARDS c ON c.board_column_id = bc.id
         WHERE bc.board_id = ?
         GROUP BY bc.id, bc.name, bc.`order`, bc.kind
-        ORDER BY bc.`order`
+        ORDER BY bc.`order`;
     """;
 
         try (var statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, id);
+            statement.setLong(1, boardId);
             var resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
@@ -86,6 +88,36 @@ public class BoardColumnDAO {
         }
 
         return dtos;
+    }
+    public Optional<BoardColumEntity> findById(Long boardId) throws SQLException {
+        List<BoardColumEntity> boardColumEntities = new ArrayList<>();
+        var sql = """
+                SELECT 
+                bc.name, bc.kind, c.id, c.title, c.description 
+                FROM BOARD_COLUMNS bc
+                INNER JOIN CARDS c 
+                ON c.board_column_id = bc.id
+                WHERE bc.id = ?;
+                """;
+        try (var statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, boardId);
+            statement.executeQuery();
+            var resultSet = statement.getResultSet();
+            if(resultSet.next()){
+                var entity = new BoardColumEntity();
+                entity.setName(resultSet.getString("bc.name"));
+                entity.setKind(findByName(resultSet.getString("bc.kind")));
+                do{
+                    var card = new CardEntity();
+                    card.setId(resultSet.getLong("c.id"));
+                    card.setTitle(resultSet.getString("c.title"));
+                    card.setDescription(resultSet.getString("c.description"));
+                    entity.getCards().add(card);
+                }while (resultSet.next());
+            }
+
+            return Optional.empty();
+        }
     }
 
 }

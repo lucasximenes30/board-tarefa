@@ -1,9 +1,12 @@
 package lucas.board.ui;
 
 import lombok.AllArgsConstructor;
+import lucas.board.persistence.entity.BoardColumEntity;
 import lucas.board.persistence.entity.BoardEntity;
+import lucas.board.service.BoardColumnQueryService;
 import lucas.board.service.BoardQueryService;
 
+import java.sql.SQLException;
 import java.util.Scanner;
 
 import static lucas.board.persistence.config.ConnectionConfig.getConnection;
@@ -14,7 +17,7 @@ public class BoardMenu {
 
     private final Scanner scanner = new Scanner(System.in);
 
-    public void execute() {
+    public void execute() throws SQLException{
         System.out.printf("Bem vindo ao board %s, selecione a operação desejada", boardEntity.getId());
         var option = -1;
         while(option != 9){
@@ -75,8 +78,31 @@ public class BoardMenu {
     }
 
 
-    private void showColumn() {
+    private void showColumn() throws SQLException {
+        var columnIds = boardEntity.getBoardColumns()
+                .stream()
+                .map(BoardColumEntity::getId)
+                .toList();
+
+        var selectedColumn = 1L;
+        while (!columnIds.contains(selectedColumn)) {
+            System.out.printf("Escolha uma coluna do board %s \n", boardEntity.getName());
+            boardEntity.getBoardColumns().forEach(c ->
+                    System.out.printf("%s - %s [%s] \n", c.getId(), c.getName(), c.getKind()));
+            selectedColumn = scanner.nextLong();
+        }
+        try (var connection = getConnection()) {
+            var column = new BoardColumnQueryService(connection).findById(selectedColumn);
+            column.ifPresent(co -> {
+                System.out.printf("Coluna %s tipo %s \n", co.getName(), co.getKind());
+                co.getCards().forEach(ca ->
+                        System.out.printf("Card %s - %s.\nDescrição: %s\n", ca.getId(), ca.getTitle(), ca.getDescription())
+                );
+            });
+        }
     }
+
+
 
     private void showCard() {
     }
