@@ -4,7 +4,7 @@ package lucas.board.persistence.dao;
 import lombok.AllArgsConstructor;
 import lucas.board.persistence.entity.BoardEntity;
 
-import javax.sql.StatementEvent;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;

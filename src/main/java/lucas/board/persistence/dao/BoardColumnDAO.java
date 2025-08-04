@@ -2,7 +2,7 @@ package lucas.board.persistence.dao;
 
 import lombok.RequiredArgsConstructor;
 import lucas.board.dto.BoardColumnDTO;
-import lucas.board.persistence.entity.BoardColumEntity;
+import lucas.board.persistence.entity.BoardColumnEntity;
 import lucas.board.persistence.entity.CardEntity;
 
 import java.sql.Connection;
@@ -20,8 +20,8 @@ public class BoardColumnDAO {
 
     private final Connection connection;
 
-    public BoardColumEntity insert(final BoardColumEntity entity) throws SQLException {
-        var sql = "INSERT INTO BOARD_COLUMNS (name, `order`, kind, board_id) VALUES (?, ?, ?, ?)";
+    public BoardColumnEntity insert(final BoardColumnEntity entity) throws SQLException {
+        var sql = "INSERT INTO BOARD_COLUMNS (name, `order`, kind, board_id) VALUES (?, ?, ?, ?);";
         try (var statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             var i = 1;
             statement.setString(i++, entity.getName());
@@ -40,15 +40,15 @@ public class BoardColumnDAO {
     }
 
 
-    public List<BoardColumEntity> findByBoardId(Long boardId) throws SQLException {
-        List<BoardColumEntity> boardColumEntities = new ArrayList<>();
-        var sql = "SELECT id, name, `order`, kind FROM BOARD_COLUMNS WHERE board_id = ? ORDER BY `order`;";
+    public List<BoardColumnEntity> findByBoardId(Long boardId) throws SQLException {
+        List<BoardColumnEntity> boardColumEntities = new ArrayList<>();
+        var sql = "SELECT id, name, `order`, kind FROM BOARD_COLUMNS WHERE board_id = ? ORDER BY `order`";
         try (var statement = connection.prepareStatement(sql)) {
             statement.setLong(1, boardId);
             statement.executeQuery();
             var resultSet = statement.getResultSet();
             while (resultSet.next()) {
-                var entity = new BoardColumEntity();
+                var entity = new BoardColumnEntity();
                 entity.setId(resultSet.getLong("id"));
                 entity.setName(resultSet.getString("name"));
                 entity.setOrder(resultSet.getInt("order"));
@@ -90,8 +90,8 @@ public class BoardColumnDAO {
 
         return dtos;
     }
-    public Optional<BoardColumEntity> findById(Long boardId) throws SQLException {
-        List<BoardColumEntity> boardColumEntities = new ArrayList<>();
+    public Optional<BoardColumnEntity> findById(Long boardId) throws SQLException {
+        List<BoardColumnEntity> boardColumEntities = new ArrayList<>();
         var sql = """
                 SELECT 
                 bc.name, bc.kind, c.id, c.title, c.description 
@@ -105,7 +105,7 @@ public class BoardColumnDAO {
             statement.executeQuery();
             var resultSet = statement.getResultSet();
             if(resultSet.next()){
-                var entity = new BoardColumEntity();
+                var entity = new BoardColumnEntity();
                 entity.setName(resultSet.getString("bc.name"));
                 entity.setKind(findByName(resultSet.getString("bc.kind")));
                 do{

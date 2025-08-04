@@ -1,6 +1,6 @@
 package lucas.board.ui;
 
-import lucas.board.persistence.entity.BoardColumEntity;
+import lucas.board.persistence.entity.BoardColumnEntity;
 import lucas.board.persistence.entity.BoardColumnKindEnum;
 import lucas.board.persistence.entity.BoardEntity;
 import lucas.board.service.BoardQueryService;
@@ -44,7 +44,7 @@ public class MainMenu {
         System.out.println("Seu board terá colunas além das 3 padrões? Se sim, informe quantas, se não, digite '0' ");
         var addtionalColumns = scanner.nextInt();
 
-        List<BoardColumEntity> columns = new ArrayList<>();
+        List<BoardColumnEntity> columns = new ArrayList<>();
         System.out.println("Informe o nome da coluna inicial do board");
         var initialColumnName = scanner.next();
         var initialColumn = createColumn(initialColumnName, INITIAL, 0);
@@ -73,23 +73,17 @@ public class MainMenu {
             service.insert(entity);
         }
     }
-    private void selectBoard() throws SQLException {
+    private void selectBoard() throws SQLException{
         System.out.println("Informe o id do board que deseja selecionar");
         var id = scanner.nextLong();
-        var connection = getConnection();
-        var queryService = new BoardQueryService(connection);
-        var optional = queryService.findById(id);
-        optional.ifPresentOrElse(
-                board -> {
-                    try {
-                        new BoardMenu(board).execute();
-                    } catch (SQLException e) {
-                        System.out.println("Erro ao abrir o menu do board: " + e.getMessage());
-                    }
-                },
-                () -> System.out.println("Não foi encontrado")
-        );
-
+        try(var connection = getConnection()){
+            var queryService = new BoardQueryService(connection);
+            var optional = queryService.findById(id);
+            optional.ifPresentOrElse(
+                    b -> new BoardMenu(b).execute(),
+                    () -> System.out.printf("Não foi encontrado um board com id %s\n", id)
+            );
+        }
     }
 
     private void deleteBoard() throws SQLException {
@@ -105,8 +99,8 @@ public class MainMenu {
             }
         }
     }
-    private BoardColumEntity createColumn(final String name, final BoardColumnKindEnum kind, final int order){
-        var boardColumn = new BoardColumEntity();
+    private BoardColumnEntity createColumn(final String name, final BoardColumnKindEnum kind, final int order){
+        var boardColumn = new BoardColumnEntity();
         boardColumn.setName(name);
         boardColumn.setKind(kind);
         boardColumn.setOrder(order);
